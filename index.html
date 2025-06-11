@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Collection</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #gameList { margin-top: 20px; }
+    .game-item { margin-bottom: 10px; }
+    button { margin-right: 5px; }
+    /* Modal styles */
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+    }
+    #modalContent {
+      background: #fff;
+      width: 80%;
+      height: 80%;
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #modalContent iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #closeModal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      background: #f44336;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Game Collection</h1>
+  <input type="file" id="gameUpload" accept=".html" />
+  <button id="uploadBtn">Upload Game</button>  <div id="gameList">
+    <!-- List of uploaded games -->
+  </div>  <!-- Modal for playing game -->  <div id="modalOverlay">
+    <div id="modalContent">
+      <button id="closeModal">Tutup</button>
+      <iframe id="gameFrame" src=""></iframe>
+    </div>
+  </div>  <script>
+    const games = [];
+    const uploadInput = document.getElementById('gameUpload');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const gameListDiv = document.getElementById('gameList');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const gameFrame = document.getElementById('gameFrame');
+    const closeModal = document.getElementById('closeModal');
+
+    uploadBtn.addEventListener('click', () => {
+      const file = uploadInput.files[0];
+      if (!file) {
+        alert('Pilih file HTML untuk diunggah.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const blob = new Blob([reader.result], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const game = { name: file.name, url };
+        games.push(game);
+        renderGameList();
+        uploadInput.value = null;
+      };
+      reader.readAsText(file);
+    });
+
+    function renderGameList() {
+      gameListDiv.innerHTML = '';
+      games.forEach((game, index) => {
+        const div = document.createElement('div');
+        div.className = 'game-item';
+        div.innerHTML = `<strong>${game.name}</strong> ` +
+          `<button data-index="${index}" class="playBtn">Play</button>`;
+        gameListDiv.appendChild(div);
+      });
+      document.querySelectorAll('.playBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          openGame(idx);
+        });
+      });
+    }
+
+    function openGame(index) {
+      const game = games[index];
+      gameFrame.src = game.url;
+      modalOverlay.style.display = 'flex';
+    }
+
+    closeModal.addEventListener('click', () => {
+      gameFrame.src = '';
+      modalOverlay.style.display = 'none';
+    });
+  </script></body>
+</html>
